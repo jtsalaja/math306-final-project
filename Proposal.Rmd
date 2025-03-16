@@ -112,3 +112,13 @@ ggplot(startups, aes(x = employees , y = revenue)) +
 
 This faceted scatter plot shows how employee count relates to revenue within each exit status category. By faceting the data, we can examine whether startups of different exit statuses tend to have different relationships between these two variables. This could reveal trends, such as whether large, high-revenue startups are more likely to be acquired or go public.
 
+
+## Appendix 1
+
+Our group's second choice dataset is https://www.kaggle.com/datasets/mohammedarfathr/smartwatch-health-data-uncleaned/data. We are hoping to use Least Squares Classification (LSC) to classify smartwatch users based on various health metrics and behaviors such as heart rate, blood oxygen level, step count, sleep duration, activity level, and stress level. Our would be to predict a user's activity level (categorized as Sedentary, Active, or Highly Active) based on the features collected from their smartwatch. The chosen dataset includes data from smartwatch users. The population of interest in this dataset is individuals who monitor their health using a smartwatch, focusing on users' physiological metrics such as heart rate, blood oxygen level and step count. Our chosen dataset consists of data collected from 10,000 smartwatch users. There are both numerical and categorical variables in the dataset. The numerical variables (Heart Rate, Blood Oxygen Level, Step Count, Sleep Duration, and Stress Level) have different units (e.g., beats per minute, percentage, and hours) and ranges. The Activity Level variable, which we hope to predict with our classification, categorizes users into three groups based on their physical activity, while the Stress Level is an ordinal variable indicating varying degrees of perceived stress.
+
+```{r}
+smartwatch <- read.csv("unclean_smartwatch_health_data.csv")
+head(smartwatch)
+```
+

@@ -122,3 +122,46 @@ whether startups of different exit statuses tend to have different
 relationships between these two variables. This could reveal trends,
 such as whether large, high-revenue startups are more likely to be
 acquired or go public.
+
+## Appendix 1
+
+Our group’s second choice dataset is
+<https://www.kaggle.com/datasets/mohammedarfathr/smartwatch-health-data-uncleaned/data>.
+We are hoping to use Least Squares Classification (LSC) to classify
+smartwatch users based on various health metrics and behaviors such as
+heart rate, blood oxygen level, step count, sleep duration, activity
+level, and stress level. Our would be to predict a user’s activity level
+(categorized as Sedentary, Active, or Highly Active) based on the
+features collected from their smartwatch. The chosen dataset includes
+data from smartwatch users. The population of interest in this dataset
+is individuals who monitor their health using a smartwatch, focusing on
+users’ physiological metrics such as heart rate, blood oxygen level and
+step count. Our chosen dataset consists of data collected from 10,000
+smartwatch users. There are both numerical and categorical variables in
+the dataset. The numerical variables (Heart Rate, Blood Oxygen Level,
+Step Count, Sleep Duration, and Stress Level) have different units
+(e.g., beats per minute, percentage, and hours) and ranges. The Activity
+Level variable, which we hope to predict with our classification,
+categorizes users into three groups based on their physical activity,
+while the Stress Level is an ordinal variable indicating varying degrees
+of perceived stress.
+
+``` r
+smartwatch <- read.csv("unclean_smartwatch_health_data.csv")
+head(smartwatch)
+```
+
+    ##   User.ID Heart.Rate..BPM. Blood.Oxygen.Level.... Step.Count
+    ## 1    4174         58.93978               98.80965  5450.3906
+    ## 2      NA               NA               98.53220   727.6016
+    ## 3    1860        247.80305               97.05295  2826.5220
+    ## 4    2294         40.00000               96.89421 13797.3380
+    ## 5    2130         61.95017               98.58380 15679.0676
+    ## 6    2095         96.28594               94.20291 10205.9923
+    ##   Sleep.Duration..hours. Activity.Level Stress.Level
+    ## 1      7.167235622316564  Highly Active            1
+    ## 2      6.538239375570314  Highly_Active            5
+    ## 3                  ERROR  Highly Active            5
+    ## 4      7.367789630207228          Actve            3
+    ## 5                         Highly_Active            6
+    ## 6      8.378342673824589  Highly_Active           10
