@@ -1,7 +1,7 @@
 ---
 title: "MATH 306: Proposal"
 author: "Noah Jarbeau, Phattiya Matrakul, Jelizaveta Tsalaja"
-output: "github_document"
+output: "html_document"
 date: "2025-03-16"
 ---
 
@@ -152,9 +152,9 @@ Our group considered the following data sets, in addition to our first and secon
 
 [1]  Ashar, Samay. “Startup Growth & Funding Trends.” Kaggle.com, 2025. https://doi.org/10853721/aa2f631868a1247c4a97ae6fb7063149.
 
-[2]Hayes, Adam. “Market Share: What It Is and the Formula for Calculating It.” Investopedia, 23 Aug. 2024, www.investopedia.com/terms/m/marketshare.asp.
+[2]Hayes, Adam. “Market Share: What It Is and the Formula for Calculating It.” Investopedia, 23 Aug. 2024, https://www.investopedia.com/terms/m/marketshare.asp.
 
-[3] Chen, James. “How the Valuation Process Works.” Investopedia, 30 June 2023, www.investopedia.com/terms/v/valuation.asp.
+[3] Chen, James. “How the Valuation Process Works.” Investopedia, 30 June 2023, https://www.investopedia.com/terms/v/valuation.asp.
 
 [4] Arfath, Mohammed . “Smartwatch Health Data (Uncleaned).” Kaggle.com, 2025. https://www.kaggle.com/datasets/mohammedarfathr/smartwatch-health-data-uncleaned/data.
 
@@ -164,4 +164,4 @@ Our group considered the following data sets, in addition to our first and secon
 
 [7] Wolberg, W. (1990). Breast Cancer Wisconsin (Original) [Dataset]. UCI Machine Learning Repository. https://doi.org/10.24432/C5HP4Z.
 
-[8]  Boice, Jay . “Data/Mlb-Elo at Master · Fivethirtyeight/Data.” GitHub, 2019, github.com/fivethirtyeight/data/tree/master/mlb-elo.
+[8]  Boice, Jay . “Data/Mlb-Elo at Master · Fivethirtyeight/Data.” GitHub, 2019, https://github.com/fivethirtyeight/data/tree/master/mlb-elo.
