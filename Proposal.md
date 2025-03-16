@@ -140,11 +140,11 @@ step count. Our chosen dataset consists of data collected from 10,000
 smartwatch users. There are both numerical and categorical variables in
 the dataset. The numerical variables (Heart Rate, Blood Oxygen Level,
 Step Count, Sleep Duration, and Stress Level) have different units
-(e.g., beats per minute, percentage, and hours) and ranges. The Activity
-Level variable, which we hope to predict with our classification,
-categorizes users into three groups based on their physical activity,
-while the Stress Level is an ordinal variable indicating varying degrees
-of perceived stress.
+(beats per minute, percentage, and hours) and ranges. The Activity Level
+variable, which we hope to predict with our classification, categorizes
+users into three groups based on their physical activity, while the
+Stress Level is an ordinal variable indicating varying degrees of
+perceived stress.
 
 ``` r
 smartwatch <- read.csv("unclean_smartwatch_health_data.csv")
@@ -165,3 +165,18 @@ head(smartwatch)
     ## 4      7.367789630207228          Actve            3
     ## 5                         Highly_Active            6
     ## 6      8.378342673824589  Highly_Active           10
+
+## Appendix 2
+
+Our group considered the following data sets, in addition to our first
+and second choices:
+
+- Heart-disease: <https://archive.ics.uci.edu/dataset/45/heart+disease>
+
+- Poisonous Mushroom: <https://archive.ics.uci.edu/dataset/73/mushroom>
+
+- Breast Cancer:
+  <https://archive.ics.uci.edu/dataset/15/breast+cancer+wisconsin+original>
+
+- 2023 season MLB Results
+  <https://github.com/fivethirtyeight/data/tree/master/mlb-elo>
