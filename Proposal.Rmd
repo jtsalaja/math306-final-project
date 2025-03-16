@@ -1,0 +1,12 @@
+---
+title: "MATH 306: Proposal"
+output: html_document
+date: "2025-03-16"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Proposal
+
