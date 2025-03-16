@@ -1,16 +1,10 @@
----
-title: "MATH 306: Proposal"
-output: "github_document"
-date: "2025-03-16"
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+MATH 306: Proposal
+================
+2025-03-16
 
 ## Proposal
 
-### A brief description of the dataset 
+### A brief description of the dataset
 
 ### Data visualisations
 
@@ -18,30 +12,30 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### A brief description of the application that you are proposing to work with
 
-```{r message=FALSE, warning=FALSE}
+``` r
 library(dplyr)
 library(mosaic)
 library(ggplot2)
 ```
+
 ### Preparing dataset
 
-
-```{r data-visualisations}
-
+``` r
 startups <- read.csv("startup_data.csv")
 
 colnames(startups) <- c("startup_name", "industry", "funding_rounds", "funding_amount", "valuation", "revenue", "employees", "market_share_percent", "profitable", "year_founded", "region", "exit_status")
 
 colnames(startups)
-
 ```
 
+    ##  [1] "startup_name"         "industry"             "funding_rounds"      
+    ##  [4] "funding_amount"       "valuation"            "revenue"             
+    ##  [7] "employees"            "market_share_percent" "profitable"          
+    ## [10] "year_founded"         "region"               "exit_status"
 
 ## Data Visualisations
 
-
-
-```{r}
+``` r
 ggplot(startups, aes(x = funding_amount, y = valuation, color = industry)) +
   geom_point() +
   scale_color_viridis_d() +
@@ -54,14 +48,14 @@ ggplot(startups, aes(x = funding_amount, y = valuation, color = industry)) +
   theme(legend.position = "bottom")
 ```
 
+![](Proposal_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
 
+This plot shows the relationship between funding and valuation, key
+metrics for startup success. By separating the data by industry, we can
+see which industries are more likely to attract higher funding and
+achieve higher valuations.
 
-
-This plot shows the relationship between funding and valuation, key metrics for startup success. By separating the data by industry, we can see which industries are more likely to attract higher funding and achieve higher valuations.
-
-
-
-```{r}
+``` r
 ggplot(startups, aes(x = region, y = market_share_percent, fill = region)) +
   geom_boxplot() +
   scale_fill_viridis_d() +
@@ -74,14 +68,14 @@ ggplot(startups, aes(x = region, y = market_share_percent, fill = region)) +
   theme(legend.position = "none")
 ```
 
+![](Proposal_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
 
-This boxplot visualizes the distribution of market share across different regions. It helps to compare the spread of market share within each region and helps us see which regions have the highest and lowest market share.
+This boxplot visualizes the distribution of market share across
+different regions. It helps to compare the spread of market share within
+each region and helps us see which regions have the highest and lowest
+market share.
 
-
-
-
-```{r}
-
+``` r
 ggplot(startups, aes(x = employees , y = revenue)) +
   geom_point(aes(color = exit_status), size = 3) +
   scale_color_viridis_d() +
@@ -93,10 +87,13 @@ ggplot(startups, aes(x = employees , y = revenue)) +
   ) +
   theme_minimal() +
   theme(legend.position = "none")
-
 ```
 
+![](Proposal_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
 
-
-This faceted scatter plot shows how employee count relates to revenue within each exit status category. By faceting the data, we can examine whether startups of different exit statuses tend to have different relationships between these two variables. This could reveal trends, such as whether large, high-revenue startups are more likely to be acquired or go public.
-
+This faceted scatter plot shows how employee count relates to revenue
+within each exit status category. By faceting the data, we can examine
+whether startups of different exit statuses tend to have different
+relationships between these two variables. This could reveal trends,
+such as whether large, high-revenue startups are more likely to be
+acquired or go public.
