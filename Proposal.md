@@ -18,6 +18,25 @@ library(mosaic)
 library(ggplot2)
 ```
 
+## Data
+
+The dataset that we chose contains information on 500 startups, focusing
+on various characteristics such as industry, funding, valuation,
+revenue, market share, profitability, and geographic region. The
+population of interest is startups across different sectors, and the
+data includes 12 variables. Among these, numerical variables include
+funding rounds, funding amount (in millions of USD), valuation (in
+millions of USD), revenue (in millions of USD), number of employees,
+market share percentage, and the year the startup was founded. These
+variables provide insight into the financial and operational scale of
+the startups. Categorical variables include startup name, industry
+(e.g., AI, FinTech, HealthTech), profitability (binary indicator:
+profitable or not), exit status (IPO, acquired, or private), and region
+(e.g., Europe, South America, North America). We hope that this dataset
+provides a diverse set of variables, both numerical and categorical,
+that could be used for classification tasks aimed at understanding
+startup performance and outcomes.
+
 ### Preparing dataset
 
 ``` r
@@ -34,6 +53,8 @@ colnames(startups)
     ## [10] "year_founded"         "region"               "exit_status"
 
 ## Data Visualisations
+
+#### Funding amount vs. Valuation by Industry
 
 ``` r
 ggplot(startups, aes(x = funding_amount, y = valuation, color = industry)) +
@@ -55,6 +76,8 @@ metrics for startup success. By separating the data by industry, we can
 see which industries are more likely to attract higher funding and
 achieve higher valuations.
 
+#### Market Share Distribution by Region
+
 ``` r
 ggplot(startups, aes(x = region, y = market_share_percent, fill = region)) +
   geom_boxplot() +
@@ -74,6 +97,8 @@ This boxplot visualizes the distribution of market share across
 different regions. It helps to compare the spread of market share within
 each region and helps us see which regions have the highest and lowest
 market share.
+
+#### Employees vs. Revenue by Exit Status
 
 ``` r
 ggplot(startups, aes(x = employees , y = revenue)) +
