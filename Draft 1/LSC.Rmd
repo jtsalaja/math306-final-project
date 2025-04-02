@@ -1,0 +1,124 @@
+
+## Least Square Classification
+
+```{r}
+# Load necessary libraries
+library(caret)
+library(ggplot2)
+
+# Load dataset
+startups <- read.csv("/cloud/project/startup_data.csv")
+
+# Set seed for reproducibility
+set.seed(42)
+
+# Remove missing values
+startup_data <- na.omit(startups)
+
+# Drop 'Startup.Name' column as it is non-numeric
+startup_data <- startup_data[, !names(startup_data) %in% c("Startup.Name")]
+
+# Convert categorical variables into factors
+startup_data$Industry <- as.factor(startup_data$Industry)
+startup_data$Region <- as.factor(startup_data$Region)
+startup_data$Exit.Status <- as.numeric(factor(startup_data$Exit.Status))  # Convert exit status to numeric
+
+# Split data into training (80%) and testing (20%) sets
+train_index <- createDataPartition(startup_data$Exit.Status, p = 0.8, list = FALSE)
+train_data <- startup_data[train_index, ]
+test_data <- startup_data[-train_index, ]
+
+# Convert categorical variables into dummy variables
+X_train <- model.matrix(Exit.Status ~ . - 1, data = train_data)  
+X_test <- model.matrix(Exit.Status ~ . - 1, data = test_data)
+
+# Convert to matrices
+X_train <- as.matrix(X_train)
+X_test <- as.matrix(X_test)
+y_train <- as.matrix(train_data$Exit.Status)
+y_test <- as.matrix(test_data$Exit.Status)
+
+# Ensure no missing values
+X_train <- X_train[complete.cases(X_train), ]
+y_train <- y_train[complete.cases(y_train), , drop = FALSE]
+
+# Solve for beta using regularization
+lambda <- 1e-5  # Small ridge penalty to avoid singular matrix
+beta_v <- solve(t(X_train) %*% X_train + lambda * diag(ncol(X_train)), t(X_train) %*% y_train)
+
+# Predictions
+y_train_pred <- round(X_train %*% beta_v)
+y_test_pred <- round(X_test %*% beta_v)
+
+# Compute classification error
+error_rate <- function(y, yhat) {
+  mean(y != yhat)
+}
+
+train_error <- error_rate(y_train, y_train_pred)
+test_error <- error_rate(y_test, y_test_pred)
+
+cat("Training Error:", train_error, "\n")
+cat("Test Error:", test_error, "\n")
+```
+
+
+```{r}
+lambdas <- 10^seq(-3, 5, length.out = 100)  # Range for lambda
+train_errors <- c()
+test_errors <- c()
+
+for (lambda in lambdas) {
+  # Apply regularization
+  beta_v <- solve(t(X_train) %*% X_train + lambda * diag(ncol(X_train)), t(X_train) %*% y_train)
+  
+  # Predictions
+  y_train_pred <- round(X_train %*% beta_v)
+  y_test_pred <- round(X_test %*% beta_v)
+  
+  # Store errors
+  train_errors <- c(train_errors, error_rate(y_train, y_train_pred))
+  test_errors <- c(test_errors, error_rate(y_test, y_test_pred))
+}
+
+# Plot errors
+df <- data.frame(lambda = lambdas, TrainError = train_errors, TestError = test_errors)
+
+# Visualize with ggplot
+ggplot(df, aes(x = lambda)) + 
+  geom_line(aes(y = TrainError, color = "Training Error")) +
+  geom_line(aes(y = TestError, color = "Test Error")) +
+  scale_x_log10() +
+  labs(title = "Training and Test Errors vs Regularization Parameter (Lambda)",
+       x = "Lambda (log scale)", y = "Error Rate") +
+  theme_minimal()
+
+```
+
+```{r}
+# Set the optimal lambda value (from the graph)
+lambda_optimal <- 1e-01
+
+# Apply regularization with the optimal lambda value
+beta_v_optimal <- solve(t(X_train) %*% X_train + lambda_optimal * diag(ncol(X_train)), t(X_train) %*% y_train)
+
+# Predictions
+y_train_pred_optimal <- round(X_train %*% beta_v_optimal)  # Round to nearest class
+y_test_pred_optimal <- round(X_test %*% beta_v_optimal)
+
+# Compute classification error
+train_error_optimal <- error_rate(y_train, y_train_pred_optimal)
+test_error_optimal <- error_rate(y_test, y_test_pred_optimal)
+
+cat("Training Error (Optimal Lambda):", train_error_optimal, "\n")
+cat("Test Error (Optimal Lambda):", test_error_optimal, "\n")
+
+# Optionally, print the confusion matrix
+pred_exit_status_optimal <- factor(y_test_pred_optimal, levels = c(1, 2, 3))
+test_data$Exit.Status <- factor(test_data$Exit.Status, levels = c(1, 2, 3))
+
+conf_matrix_optimal <- confusionMatrix(pred_exit_status_optimal, test_data$Exit.Status)
+print(conf_matrix_optimal)
+
+```
+
