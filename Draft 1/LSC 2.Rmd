@@ -1,0 +1,113 @@
+---
+title: "MATH 306: Project LCS 2 Draft"
+author: "Noah Jarbeau, Phattiya Matrakul, Jelizaveta Tsalaja"
+output: "github_document"
+---
+
+```{r}
+startups_data <- read.csv("/cloud/project/startup_data.csv")
+
+colnames(startups_data) <- c("startup_name", "industry", "funding_rounds", "funding_amount", "valuation", "revenue", "employees", "market_share_percent", "profitable", "year_founded", "region", "exit_status")
+
+#Drop NAs
+startups_data <- na.omit(startups_data)
+
+#exclude Names
+startups_data <- startups_data[,!names(startups_data) %in% c("startup_name")]
+
+#Convert to numeric
+startups_data$industry <- as.numeric(as.factor(startups_data$industry))
+startups_data$region <- as.numeric(as.factor(startups_data$region))
+startups_data$exit_status <- as.numeric(as.factor(startups_data$exit_status))
+
+#Split data 
+set.seed(123)
+startups_trainIndex <- createDataPartition(startups_data$exit_status, p=0.7, list = FALSE)
+startups_train <- startups_data[startups_trainIndex, ]
+startups_test <- startups_data[-startups_trainIndex, ]
+
+#Fit models for each species using least squares regression
+lm_acquired <- lm(I(exit_status == 1) ~ ., data = startups_data)
+lm_ipo <- lm(I(exit_status == 2) ~ ., data = startups_data)
+lm_private <- lm(I(exit_status == 3) ~ ., data = startups_data)
+
+#Predictions on test data
+pred_acquired <- predict(lm_acquired, startups_test)
+pred_ipo <- predict(lm_ipo, startups_test)
+pred_private <- predict(lm_private, startups_test)
+
+#Combine predictions into a matrix and classify based on max probability
+pred_matrix <- cbind(pred_acquired, pred_ipo, pred_private)
+pred_class <- max.col(pred_matrix)
+
+#Compute Confusion Matrix
+conf_matrix <- confusionMatrix(factor(pred_class), factor(startups_test$exit_status))
+conf_matrix
+```
+
+
+The confusion matrix reveals that my least squares classifier only predicts class 3, failing to classify any observations as class 1 or 2. While the overall accuracy appears decent at 69.8%, it is misleading since the model does not differentiate between classes effectively. The Kappa statistic of 0 confirms that the classifier performs no better than random chance. Sensitivity for classes 1 and 2 is 0, meaning these classes are never correctly identified. This issue could stem from class imbalance, meaning that Class 3, which in our case is Private exit status, is dominant in the dataset. To improve performance, we should explore balancing the dataset, selecting better features
+
+
+We will try to balance the dataset, specifically we will use SMOTE to increase Minority Classes.
+
+```{r}
+#Check how imbalananced the dataset is
+table(startups_data$exit_status)
+
+#Add SMOTE library
+library(themis)  # Load package
+library(tidymodels) 
+
+#Apply SMOTE for balancing
+# Convert the target variable to a factor if it's not already
+startups_data$exit_status <- as.factor(startups_data$exit_status)
+
+# Define the recipe for data preprocessing
+recipe_obj <- recipe(exit_status ~ ., data = startups_data) %>%
+  step_smote(exit_status, over_ratio = 1)  # Apply SMOTE with 1:1 oversampling ratio
+
+# Apply the recipe and get the transformed (balanced) data
+balanced_data <- recipe_obj %>%
+  prep(training = startups_data) %>%
+  bake(new_data = NULL)
+
+# Check the new class distribution
+table(balanced_data$exit_status)
+```
+
+In the original dataset, Class 2 was underrepresented, so SMOTE generated synthetic samples for Class 2, increasing its count to match the other classes. The process also applied to Class 1 to ensure that all three classes are now represented equally.
+
+```{r}
+#We will try to run our Least Square Classification Model with balanced data
+
+#Split balanced_data into training and testing datasets
+set.seed(123)
+balanced_trainIndex <- createDataPartition(balanced_data$exit_status, p = 0.8, list = FALSE)
+balanced_train <- balanced_data[balanced_trainIndex, ]
+balanced_test <- balanced_data[-balanced_trainIndex, ]
+
+#Fit models for each class using least squares regression
+lm_acquired <- lm(I(exit_status == 1) ~ ., data = balanced_train)
+lm_ipo <- lm(I(exit_status == 2) ~ ., data = balanced_train)
+lm_private <- lm(I(exit_status == 3) ~ ., data = balanced_train)
+
+#Predictions on test data
+pred_acquired <- predict(lm_acquired, balanced_test)
+pred_ipo <- predict(lm_ipo, balanced_test)
+pred_private <- predict(lm_private, balanced_test)
+
+#Combine predictions into a matrix and classify based on max probability
+pred_matrix <- cbind(pred_acquired, pred_ipo, pred_private)
+
+pred_class <- max.col(pred_matrix)
+
+#Ensure factor levels are consistent
+pred_class <- factor(pred_class, levels = levels(balanced_test$exit_status))
+
+
+#Compute Confusion Matrix
+conf_matrix <- confusionMatrix(factor(pred_class), factor(balanced_test$exit_status))
+conf_matrix
+```
+
