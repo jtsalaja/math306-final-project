@@ -1,0 +1,178 @@
+
+---
+title: "MATH 306: Project LCS 2 Draft"
+author: "Noah Jarbeau, Phattiya Matrakul, Jelizaveta Tsalaja"
+output: "github_document"
+---
+```{r}
+# Load necessary libraries
+library(caret)
+library(ggplot2)
+library(forcats)
+library(DMwR2)
+```
+
+
+
+
+```{r}
+startups_data <- read.csv("startup_data.csv")
+
+# Set seed for reproducibility
+set.seed(41)
+
+# Remove missing values
+startups_data_raw <- na.omit(startups_data)
+
+colnames(startups_data) <- c("startup_name", "industry", "funding_rounds", "funding_amount", "valuation", "revenue", "employees", "market_share_percent", "profitable", "year_founded", "region", "exit_status")
+
+# Drop 'Startup.Name' column as it is non-numeric
+startups_data_raw <- startups_data[, !names(startups_data) %in% c("startup_name")]
+
+
+# Keep companies founded after 2010
+startups_data <- startups_data_raw %>% 
+  filter(year_founded > 2010)  # Adjust year as needed
+
+
+# Drop Year column
+# startups_data <- startups_data[, !names(startups_data) %in% c("year_founded")]
+
+ 
+#startups_data <- startups_data %>%
+#  mutate(
+#    funding_per_employee = funding_amount / (employees + 1),
+#    valuation_revenue_ratio = valuation / (revenue + 1),
+#    market_share_per_employee = market_share_percent / (employees + 1)
+#  )
+ 
+ 
+
+# Convert categorical variables into factors
+startups_data$exit_status <- as.numeric(factor(startups_data$exit_status))
+startups_data$industry <- as.numeric(factor(startups_data$industry) )
+startups_data$region <- as.numeric(factor(startups_data$region))
+
+#scale columns 
+exit <- startups_data$exit_status
+
+# Drop Year column
+ startups_data <- startups_data[, !names(startups_data) %in% c("exit_status")]
+
+goto = ncol(startups_data) + 1 # used for scaling parts except the first column. 
+startups_data_scaled = as.data.frame(scale(startups_data))
+
+
+startups_data_scaled_final <- cbind(startups_data_scaled, 
+                                    exit_status = exit)
+startups_data_scaled_final
+
+# Split data into training (80%) and testing (20%) sets
+train_index <- createDataPartition(startups_data_scaled_final$exit_status, p = 0.9, list = FALSE)
+train_data <- startups_data_scaled_final[train_index, ]
+test_data <- startups_data_scaled_final[-train_index, ]
+
+
+
+
+#Fit models for each exit status using least squares regression
+lm_acquired <- lm(I(exit_status == 1) ~ . - exit_status, data = train_data)
+lm_ipo      <- lm(I(exit_status == 2) ~ . - exit_status, data = train_data)
+lm_private  <- lm(I(exit_status == 3) ~ . - exit_status, data = train_data)
+
+#Predictions on test data
+pred_acquired <- predict(lm_acquired, newdata = test_data)
+pred_ipo      <- predict(lm_ipo, newdata = test_data)
+pred_private  <- predict(lm_private, newdata = test_data)
+
+#Combine predictions into a matrix and classify based on max probability
+pred_matrix <- cbind(pred_acquired, pred_ipo, pred_private)
+
+
+# Add bonus scores to minority classes
+pred_matrix_adj <- pred_matrix
+#pred_matrix_adj[,1] <- pred_matrix[,1] + .36  # Boost Acquired
+pred_matrix_adj[,2] <- pred_matrix[,2] + 0.4  # Boost IPO
+
+
+
+# Classify using adjusted scores
+
+pred_class <- max.col(pred_matrix_adj)
+
+
+#pred_class <- max.col(pred_matrix) # picks the class with the highest probability
+
+
+#Compute Confusion Matrix
+true_class <- factor(test_data$exit_status, levels = 1:3)
+pred_class <- factor(pred_class, levels = 1:3)
+
+conf_matrix <- confusionMatrix(pred_class, true_class)
+conf_matrix
+
+```
+
+```{r}
+# Extract coefficients for each model
+coef_acquired <- summary(lm_acquired)$coefficients
+coef_ipo <- summary(lm_ipo)$coefficients
+coef_private <- summary(lm_private)$coefficients
+
+# Create a data frame of coefficients for each class
+importance_df <- data.frame(
+  Variable = rownames(coef_acquired),
+  Acquired = coef_acquired[, "Estimate"],
+  IPO = coef_ipo[, "Estimate"],
+  Private = coef_private[, "Estimate"]
+)
+
+# Remove the intercept row (optional)
+importance_df <- importance_df[-1, ]
+
+# Rank variables by absolute coefficient value for each class
+importance_df$Abs_Acquired <- abs(importance_df$Acquired)
+importance_df$Abs_IPO <- abs(importance_df$IPO)
+importance_df$Abs_Private <- abs(importance_df$Private)
+
+# Sort by importance for each class
+importance_acquired <- importance_df[order(-importance_df$Abs_Acquired), ]
+importance_ipo <- importance_df[order(-importance_df$Abs_IPO), ]
+importance_private <- importance_df[order(-importance_df$Abs_Private), ]
+
+# Print top 5 variables for each class
+cat("Top variables for Acquired:\n")
+print(head(importance_acquired[, c("Variable", "Acquired")], 5))
+
+cat("\nTop variables for IPO:\n")
+print(head(importance_ipo[, c("Variable", "IPO")], 5))
+
+cat("\nTop variables for Private:\n")
+print(head(importance_private[, c("Variable", "Private")], 5))
+```
+
+```{r}
+library(tidyr)
+library(ggplot2)
+
+# Reshape data for plotting
+plot_data <- importance_df %>%
+  pivot_longer(
+    cols = c(Acquired, IPO, Private),
+    names_to = "Class",
+    values_to = "Coefficient"
+  )
+
+# Plot coefficients
+ggplot(plot_data, aes(x = reorder(Variable, abs(Coefficient)), y = Coefficient, fill = Class)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  coord_flip() +
+  scale_fill_viridis_d() +
+  labs(
+    title = "Variable Importance by Exit Status",
+    x = "Variable",
+    y = "Coefficient (Impact)"
+  ) +
+  theme_minimal()
+```
+
