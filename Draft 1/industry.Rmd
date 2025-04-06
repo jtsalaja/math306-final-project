@@ -1,0 +1,186 @@
+
+---
+title: "MATH 306: Project "
+author: "Noah Jarbeau, Phattiya Matrakul, Jelizaveta Tsalaja"
+output: "github_document"
+---
+```{r}
+# Load necessary libraries
+library(caret)
+library(ggplot2)
+library(forcats)
+```
+
+
+
+
+```{r}
+startups_data <- read.csv("startup_data.csv")
+
+
+
+startups_data_raw <- startups_data
+# Set seed for reproducibility
+set.seed(21)
+
+
+
+
+
+# Remove missing values
+startups_data <- na.omit(startups_data)
+
+colnames(startups_data) <- c("startup_name", "industry", "funding_rounds", "funding_amount", "valuation", "revenue", "employees", "market_share_percent", "profitable", "year_founded", "region", "exit_status")
+
+
+# Keep companies founded after 2010
+#startups_data <- startups_data %>% 
+#  filter(year_founded > 2010)  # Adjust year as needed
+
+table(startups_data$year_founded)
+
+
+# Drop 'Startup.Name' column as it is non-numeric
+startups_data <- startups_data[, !names(startups_data) %in% c("startup_name")]
+
+
+
+
+
+# Drop Year column
+ startups_data <- startups_data[, !names(startups_data) %in% c("year_founded")]
+ 
+# Drop region column
+ startups_data <- startups_data[, !names(startups_data) %in% c("region")]
+ 
+ # Drop employees column
+ startups_data <- startups_data[, !names(startups_data) %in% c("employees")]
+ 
+ # Drop  column
+ #startups_data <- startups_data[, !names(startups_data) %in% c("funding_rounds")]
+ 
+ 
+ 
+
+# Convert categorical variables into factors
+ 
+ 
+ if ("exit_status" %in% colnames(startups_data))
+{
+   startups_data$exit_status <- as.numeric(factor(startups_data$exit_status))
+}
+startups_data$industry <- as.numeric(factor(startups_data$industry) )
+
+if ("region" %in% colnames(startups_data))
+{
+  startups_data$region <- as.numeric(factor(startups_data$region))
+}
+ 
+
+```
+
+
+```{R}
+```
+startups_data <- startups_data %>%
+  mutate(
+    funding_per_employee = funding_amount / (employees + 1),
+    valuation_revenue_ratio = valuation / (revenue + 1),
+    market_share_per_employee = market_share_percent / (employees + 1)
+  )
+```
+```
+
+```{R}
+
+
+
+
+
+
+
+
+#scale columns 
+ 
+goto = ncol(startups_data)   # used for scaling parts except the first column. 
+startups_data_scaled = as.data.frame(scale(startups_data[,2:goto]))
+startups_data_scaled_final <- cbind(
+                                    industry = startups_data$industry,startups_data_scaled )
+
+
+
+#set.seed(30)
+# Split data into training (80%) and testing (20%) sets
+train_index <- createDataPartition(startups_data_scaled_final$industry, p = 0.8, list = FALSE)
+train_data <- startups_data_scaled_final[train_index, ]
+test_data <- startups_data_scaled_final[-train_index, ]
+
+ 
+# lm() which accepts data frames directly and does not need X_train and X_test.
+
+#----------------------------------------------------------------------------
+
+```
+
+
+```{R}
+
+#Fit models for each exit status using least squares regression
+lm_ai             <- lm(I(industry == 1) ~ .,data = train_data)
+lm_cybersecurity  <- lm(I(industry == 2) ~ ., data = train_data)
+lm_b              <- lm(I(industry == 3) ~ ., data = train_data)
+lm_edTech         <- lm(I(industry == 4) ~ ., data = train_data)
+lm_a              <- lm(I(industry == 5) ~ ., data = train_data)
+lm_gaming         <- lm(I(industry == 6) ~ ., data = train_data)
+lm_healthTech     <- lm(I(industry == 7) ~ ., data = train_data)
+lm_iot            <- lm(I(industry == 8) ~ ., data = train_data)
+
+
+
+
+#Predictions on test data
+pred_ai            <- predict(lm_ai, newdata = test_data)
+pred_cybersecurity <- predict(lm_cybersecurity, newdata = test_data)
+pred_b             <- predict(lm_b, newdata = test_data)
+pred_edTech        <- predict(lm_edTech, newdata = test_data)
+pred_a             <- predict(lm_a, newdata = test_data)
+pred_gaming        <- predict(lm_gaming, newdata = test_data)
+pred_healthTech    <- predict(lm_ai, newdata = test_data)
+pred_iot           <- predict(lm_iot, newdata = test_data)
+
+
+
+
+
+
+```
+
+
+
+```{R}
+
+pred_matrix <- cbind(pred_ai,pred_cybersecurity,pred_b,pred_edTech,pred_a,pred_gaming,pred_healthTech,pred_iot)
+
+pred_class <- max.col(pred_matrix) # picks the class with the highest probability
+
+table(pred_class)
+table(test_data$industry)
+
+#Compute Confusion Matrix
+true_class <- factor(test_data$industry, levels = 1:8)
+pred_class <- factor(pred_class, levels = 1:8)
+
+conf_matrix <- confusionMatrix(pred_class, true_class)
+conf_matrix
+
+
+
+```
+
+
+
+
+
+
+
+
