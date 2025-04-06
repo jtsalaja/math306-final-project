@@ -1,0 +1,178 @@
+
+---
+title: "MATH 306: Project "
+author: "Noah Jarbeau, Phattiya Matrakul, Jelizaveta Tsalaja"
+output: "github_document"
+---
+```{r}
+# Load necessary libraries
+library(caret)
+library(ggplot2)
+library(forcats)
+
+
+# Add required packages
+library(stringr)  # For str_detect()
+```
+
+
+
+
+```{r}
+health_data <- read.csv("unclean_smartwatch_health_data.csv")
+
+
+# Set seed for reproducibility
+set.seed(21)
+
+
+
+
+
+# Remove missing values
+health_data <- na.omit(health_data)
+
+colnames(health_data) <- c("user_ID", "heart_Rate", "blood_Oxygen_Level", "step_Count", "sleep_Duration", "activity_Level", "stress_Level")
+
+
+# Drop 'user id' column 
+health_data <- health_data[, !names(health_data) %in% c("user_ID")]
+
+
+
+# Clean activity level and create H/A/S classes
+health_data_clean <- health_data %>%
+  # Fix typos and extract first letter
+  mutate(activity_Level = tolower(activity_Level),
+         activity_Class = case_when(
+           str_detect(activity_Level, "^h") ~ "1",
+           str_detect(activity_Level, "^a") ~ "2",
+           str_detect(activity_Level, "^s") ~ "3",
+           TRUE ~ NA_character_
+         )) %>%
+  
+# Remove original messy column
+select(-activity_Level)
+
+
+print(health_data_clean)
+
+
+#this is because the data had many typos
+
+```
+
+```{r}
+
+  
+
+
+
+ #Convert categorical variables into factors
+ 
+health_data_clean$activity_Class <- as.numeric(health_data_clean$activity_Class)
+health_data_clean
+
+health_data_clean$stress_Level <- as.numeric(health_data_clean$stress_Level)
+health_data_clean
+
+health_data_clean$sleep_Duration <- as.numeric(health_data_clean$sleep_Duration)
+health_data_clean
+
+
+# Remove missing values
+health_data_clean <- na.omit(health_data_clean)
+
+```
+
+
+```{R}
+```
+startups_data <- startups_data %>%
+  mutate(
+    funding_per_employee = funding_amount / (employees + 1),
+    valuation_revenue_ratio = valuation / (revenue + 1),
+    market_share_per_employee = market_share_percent / (employees + 1)
+  )
+```
+```
+
+```{R}
+
+
+
+#scale columns 
+ 
+goto = ncol(health_data_clean)-1   # used for scaling parts except the first column. 
+health_data_clean_scaled = as.data.frame(scale(health_data_clean[,1:goto]))
+health_data_clean_scaled_final <- cbind(
+                                    activity_Class = health_data_clean$activity_Class,health_data_clean_scaled )
+
+health_data_clean_scaled_final
+
+
+```
+
+```{R}
+#set.seed(30)
+# Split data into training (80%) and testing (20%) sets
+train_index <- createDataPartition(health_data_clean_scaled_final$activity_Class, p = 0.8, list = FALSE)
+train_data <- health_data_clean_scaled_final[train_index, ]
+test_data <- health_data_clean_scaled_final[-train_index, ]
+
+ 
+# lm() which accepts data frames directly and does not need X_train and X_test.
+
+#----------------------------------------------------------------------------
+
+```
+
+
+```{R}
+
+#Fit models for each exit status using least squares regression
+lm_1             <- lm(I(activity_Class == 1) ~ .,data = train_data)
+lm_2  <- lm(I(activity_Class == 2) ~ ., data = train_data)
+lm_3              <- lm(I(activity_Class == 3) ~ ., data = train_data)
+
+
+
+
+
+#Predictions on test data
+pred_1            <- predict(lm_1, newdata = test_data)
+pred_2 <- predict(lm_2, newdata = test_data)
+pred_3             <- predict(lm_3, newdata = test_data)
+
+
+
+
+```
+
+
+
+```{R}
+
+pred_matrix <- cbind(pred_1,pred_2,pred_3)
+
+pred_class <- max.col(pred_matrix) # picks the class with the highest probability
+
+
+#Compute Confusion Matrix
+true_class <- factor(test_data$activity_Class, levels = 1:3)
+pred_class <- factor(pred_class, levels = 1:3)
+
+conf_matrix <- confusionMatrix(pred_class, true_class)
+conf_matrix
+
+
+
+```
+
+
+
+
+
+
+
+
