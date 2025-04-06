@@ -86,16 +86,7 @@ health_data_clean <- na.omit(health_data_clean)
 ```
 
 
-```{R}
-```
-startups_data <- startups_data %>%
-  mutate(
-    funding_per_employee = funding_amount / (employees + 1),
-    valuation_revenue_ratio = valuation / (revenue + 1),
-    market_share_per_employee = market_share_percent / (employees + 1)
-  )
-```
-```
+
 
 ```{R}
 
